@@ -33,8 +33,8 @@ else
 		aboutUpdateURL="https://support.apple.com/en-us/HT211896"
 		echo "Setting About Update URL to \"What's new in the updates for macOS Big Sur\""
 	elif [[ "${latestVersionRelease}" == "12" ]] ; then 
-		aboutUpdateURL="https://support.apple.com/en-us/" # future link for macOS Monterey
-		# echo "Setting About Update URL to What's new in the updates for macOS Monterey"
+		aboutUpdateURL="https://support.apple.com/en-us/HT212585" # future link for macOS Monterey
+		echo "Setting About Update URL to What's new in the updates for macOS Monterey"
 	else
 		aboutUpdateURL="https://support.apple.com/en-us/HT201541" # Update macOS on Mac
 	fi
