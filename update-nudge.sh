@@ -3,8 +3,8 @@
 # Define the current Jamf Patch URL
 jamfPatchURL="https://jamf-patch.jamfcloud.com/v1/software/303" # macOS Big Sur
 
-# Get the current contents of nudge-11.json
-jsonContents=$(cat nudge-11.json)
+# Get the current contents of nudge.json
+jsonContents=$(cat nudge.json)
 requiredMinimumOSVersionCurrent=$(echo $jsonContents | grep requiredMinimumOSVersion | tr -d '"' | tr -d ',' | awk '{print $9;}')
 targetedOSVersionsCurrent=$(echo $jsonContents | grep targetedOSVersions | tr -d ']' | tr -d '}' | awk '{$1 = ""; $2 = ""; $3 = ""; $4 = ""; $5 = ""; $6 = ""; $7 = ""; $8 = ""; $9 = ""; $10 = ""; $11 = ""; print $0;}')
 echo "Current minimum OS version is $requiredMinimumOSVersionCurrent"
@@ -25,7 +25,7 @@ if [[ "${requiredMinimumOSVersionCurrent}" == "${latestVersionNumber}" ]] ; then
 	echo "Versions match, exiting…"
 	exit 0
 else
-	echo "Versions do not match, updating nudge-11.json…"
+	echo "Versions do not match, updating nudge.json…"
 
 	# Set the About Update URL for a release
 	latestVersionRelease=$(echo $latestVersionNumber | awk -F. '{ print $1 }')
@@ -52,7 +52,7 @@ else
 	echo "Latest OS release date is $latestVersionReleaseDate, setting required installation date to $requiredInstallationFutureDate"
 
 	# Generate new JSON
-	cat <<-EOF > nudge-11.json
+	cat <<-EOF > nudge.json
 	{
 		"osVersionRequirements": [{
 			"aboutUpdateURL": "$aboutUpdateURL",
@@ -63,7 +63,7 @@ else
 	}
 	EOF
 
-	scriptResult+="Updated nudge-11.json; "
+	scriptResult+="Updated nudge.json; "
 	echo $scriptResult
 	exit 0
 fi
