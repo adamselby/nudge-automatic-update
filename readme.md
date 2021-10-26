@@ -2,11 +2,13 @@ We use [Nudge](https://github.com/macadmins/nudge) to enforce macOS updates. Nud
 
 This JSON file is specified as *-json-url* in the LaunchAgent which is installed along with Nudge and can be updated via Jamf. Each time Nudge is launched, it checks the URL for `osVersionRequirements` This file consists of a few key parts, which are detailed below. 
 
+**This version of `update-nudge.sh` is available for legacy reasons, where Nudge versions prior to v1.1.0 are in use.**
+
 ## update-nudge.sh
 
-This script is intended to be run as a recurring task, and it updates the *nudge-11.json* file with the latest release as determined by jamf-patch, with a 45 day lead time for when the latest release will be the required version. This can be changed to a shorter window manually by editing `requiredInstallationDate` in *nudge-11.json*. 
+This script is intended to be run as a recurring task, and it updates the *nudge.json* file with the latest release as determined by jamf-patch, with a 45 day lead time for when the latest release will be the required version. This can be changed to a shorter window manually by editing `requiredInstallationDate` in *nudge.json*. 
 
-When a new release is detected, the version number defined in `requiredMinimumOSVersion` in *nudge-11.json* is appended to the end of `targetedOSVersions` and the `requiredMinimumOSVersion` is set to the new release version number. The installation date is set to 45 days in the future, but is configurable for your environment. 
+When a new release is detected, the version number defined in `requiredMinimumOSVersion` in *nudge.json* is appended to the end of `targetedOSVersions` and the `requiredMinimumOSVersion` is set to the new release version number. The installation date is set to 45 days in the future, but is configurable for your environment. 
 
 ## nudge-*.json
 
