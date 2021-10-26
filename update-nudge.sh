@@ -2,7 +2,7 @@
 
 # Define the current Jamf Patch URL
 jamfPatchURL="https://jamf-patch.jamfcloud.com/v1/software/303" # macOS Big Sur
-jamfPatchURL="https://jamf-patch.jamfcloud.com/v1/software/41F" # macOS Monterey
+# jamfPatchURL="https://jamf-patch.jamfcloud.com/v1/software/41F" # macOS Monterey
 
 # Get the current contents of nudge.json
 jsonContents=$(cat nudge.json)
