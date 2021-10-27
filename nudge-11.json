@@ -1,8 +1,0 @@
-{
-"osVersionRequirements": [{
-"aboutUpdateURL": "https://support.apple.com/en-us/HT211896",
-"requiredInstallationDate": "2021-09-08T00:00:00Z",
-"requiredMinimumOSVersion": "11.5.2",
-"targetedOSVersions": [ "11.0", "11.0.1", "11.1", "11.2", "11.2.1", "11.2.2", "11.2.3", "11.3", "11.3.1", "11.4", "11.5", "11.5.1" ]
-}]
-}
