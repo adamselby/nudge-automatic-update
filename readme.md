@@ -2,7 +2,7 @@ You can use [Nudge](https://github.com/macadmins/nudge) to enforce macOS updates
 
 To do this, the JSON file can be served up at a URL which is then specified as *-json-url* in the LaunchAgent. This LaunchAgent is installed along with Nudge, or can be created and updated via a script, independently of your install. Each time Nudge is launched via this LaunchAgent, it checks the URL for `osVersionRequirements` in *nudge.json*. Because of the difference in OS versions, it would be This information consists of a few key parts, which are detailed below. 
 
-This version of `update-nudge.sh` is for Nudge v1.1.0 or higher only. You can find a legacy version supporting `targetedOSVersions` under the *legacy* branch. 
+This version of `update-nudge.sh` is for Nudge v1.1.0 or higher only. You can find a legacy version supporting `targetedOSVersions` under the *legacy* branch, if needed. 
 
 ## update-nudge.sh
 
