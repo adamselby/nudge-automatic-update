@@ -1,29 +1,33 @@
-We use [Nudge](https://github.com/macadmins/nudge) to enforce macOS updates. Nudge is entirely customizable, and allows us to require OS updates be completed by specific set dates. While the customization of Nudge happens in a Configuration Profile on Jamf, *nudge.json* in this repository manages the `osVersionRequirements` section of Nudge. 
+You can use [Nudge](https://github.com/macadmins/nudge) to enforce macOS updates, but this requires manual work on your part for regular updates to macOS. Nudge is entirely customizable, and allows you the ability to require OS updates be completed by specific set dates, which is what you can automate using *update-nudge.sh*. The customization of Nudge can happen via a Configuration Profile, and *nudge.json* in this repository can manage the `osVersionRequirements` section of Nudge independently of the Configuration Profile. This allows for updates as each new version of macOS releases, without pushing a new profile. 
 
-This JSON file is specified as *-json-url* in the LaunchAgent which is installed along with Nudge and can be updated via Jamf. Each time Nudge is launched, it checks the URL for `osVersionRequirements` This file consists of a few key parts, which are detailed below. 
+To do this, the JSON file can be served up at a URL which is then specified as *-json-url* in the LaunchAgent. This LaunchAgent is installed along with Nudge, or can be created and updated via a script, independently of your install. Each time Nudge is launched via this LaunchAgent, it checks the URL for `osVersionRequirements` in *nudge.json*. Because of the difference in OS versions, it would be This information consists of a few key parts, which are detailed below. 
+
+This version of `update-nudge.sh` is for Nudge v1.1.0 or higher only. You can find a legacy version supporting `targetedOSVersions` under the *legacy* branch. 
 
 ## update-nudge.sh
 
-This script is intended to be run as a recurring task, and it updates the *nudge-11.json* file with the latest release as determined by jamf-patch, with a 45 day lead time for when the latest release will be the required version. This can be changed to a shorter window manually by editing `requiredInstallationDate` in *nudge-11.json*. 
+This script is intended to be run through a variety of triggers, including a manual trigger, an automated trigger based on a content change from a source such as [Apple Software Lookup Service](https://gdmf.apple.com/v2/pmv), or on a recurring basis. The script updates *nudge.json* file with the latest release information for macOS Big Sur and macOS Monterey. This latest release information is provided by Jamf Patch. 
 
-When a new release is detected, the version number defined in `requiredMinimumOSVersion` in *nudge-11.json* is appended to the end of `targetedOSVersions` and the `requiredMinimumOSVersion` is set to the new release version number. The installation date is set to 45 days in the future, but is configurable for your environment. 
+Each new release is added with a configurable lead time (default: 14 days) from when the latest release is available to when it will be the required version for easy automation of Nudge Events. When a new release is available, the version number becomes the `requiredMinimumOSVersion`, and the `requiredInstallationDate` is set to a future date determined by the configurable lead time.
 
-## nudge-*.json
+Currently, this script does not account for or accommodate [deferring software updates](https://support.apple.com/guide/mdm/managing-software-updates-mdm02df57e2a/web#mdmfb8077b62), and assumes that updates are available to your users immediately. A future version of this script will allow for a configurable deferral period. 
 
-Define required minimum OS versions, required installation dates, and targeted OS versions in a JSON file that is read by Nudge, in order to enforce Software Updates to end users. This JSON file can be served directly from Git, or hosted on a static web server. 
+## nudge.json
+
+Defines multiple values for a major release of macOS, including the about update URL, required installation dates, minimum OS versions, and targeted OS version in a JSON file that is read by Nudge, in order to enforce Software Updates to end users. This JSON file can be served directly from Git, or hosted on a static web server. 
 
 ### aboutUpdateURL
 
-This is a URL for the "More information" button in Nudge. This can be used to link to the "What's new in the updates for macOS" Apple Support article, or could be used to link to a CAS documentation page about a specific update, or our update policy in general. 
+This is a URL for the "More information" button in Nudge. This can be used to link to the "What's new in the updates for macOS" Apple Support article, or could be used to link to an internal documentation page.  
 
 ### requiredInstallationDate
 
-This is the installation date where this version of macOS will be required. Users will be notified of the update prior to this date, and shown the deadline in order to encourage they update at their convenience. If the user has not updated by this date, they will be unable to defer the update further. 
+The required installation date for Nudge to enforce the required operating system version. This is calculated as a future date using the configurable lead time (default: 14 days) and the published date from Jamf Patch. By default, a new release of macOS will be required 14 days after release. 
 
 ### requiredMinimumOSVersion
 
-This is the desired OS version that we are requiring users to update to. As an example, if the `requiredMinimumOSVersion` is set to 11.4, users who are already on 11.4 will not see the Nudge window notifying them to update. Any users not on 11.4 will be notified, if they are included in `targetedOSVersions`. This version does not have to be the most recent release, and does not have to match the software update available via deferred policy.
+The required minimum operating system version. This is the desired OS version that we are requiring users to update to automatically after it is released. This version is provided by Jamf Patch, along with the release date. 
 
-### targetedOSVersions
+### targetedOSVersionsRule
 
-Finally, we have a list of targeted previous versions of macOS that must be updated to the `requiredMinimumOSVersion`. These must be individually specified in order to ensure a match against all potential Macs. 
+The major version of macOS that require a security update. This script automatically targets the correct OS using *major OS match*, meaning updates to macOS Monterey will be required for users on macOS Monterey only, while updates to macOS Big Sur will be required for users on macOS Big Sur only. Users will not be prompted to upgrade to macOS Monterey with these rules. This allows us to maintain separate upgrade paths for users who need to remain on macOS Big Sur and have not upgraded to macOS Monterey. If you are not deferring major versions of macOS, your users may still be prompted by Software Update to install macOS Monterey while on macOS Big Sur. 

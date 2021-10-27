@@ -1,69 +1,108 @@
 #!/bin/bash
 
-# Define the current Jamf Patch URL
-jamfPatchURL="https://jamf-patch.jamfcloud.com/v1/software/303" # macOS Big Sur
+requiredInstallationFutureTime="T00:00:00Z"
+leadTimeInDays="14"
 
-# Get the current contents of nudge-11.json
-jsonContents=$(cat nudge-11.json)
-requiredMinimumOSVersionCurrent=$(echo $jsonContents | grep requiredMinimumOSVersion | tr -d '"' | tr -d ',' | awk '{print $9;}')
-targetedOSVersionsCurrent=$(echo $jsonContents | grep targetedOSVersions | tr -d ']' | tr -d '}' | awk '{$1 = ""; $2 = ""; $3 = ""; $4 = ""; $5 = ""; $6 = ""; $7 = ""; $8 = ""; $9 = ""; $10 = ""; $11 = ""; print $0;}')
-echo "Current minimum OS version is $requiredMinimumOSVersionCurrent"
+# Shared functions for each major release
 
-# Add the current minimum OS version to the targeted OS versions list
-targetedOSVersions=$(echo $targetedOSVersionsCurrent, \"$requiredMinimumOSVersionCurrent\")
-
-# Get the latest release info from jamf-patch
-latestVersionNumber=$(curl -s "$jamfPatchURL" | grep currentVersion | tr -d '"' | awk '{ print $2 }')
-latestVersionReleaseDate=$(curl -s "$jamfPatchURL" | grep lastModified | tr -d '"' | awk '{ print $2 }' | cut -c1-10)
-echo "Latest OS version is $latestVersionNumber"
-
-# Calculate the required minimum OS version and targeted OS versions
-requiredMinimumOSVersion=$(echo $latestVersionNumber)
-
-# Check if the current targetedOSVersions matches latestVersionNumber
-if [[ "${requiredMinimumOSVersionCurrent}" == "${latestVersionNumber}" ]] ; then
-	echo "Versions match, exiting…"
-	exit 0
-else
-	echo "Versions do not match, updating nudge-11.json…"
-
-	# Set the About Update URL for a release
-	latestVersionRelease=$(echo $latestVersionNumber | awk -F. '{ print $1 }')
-	if [[ "${latestVersionRelease}" == "11" ]] ; then 
-		aboutUpdateURL="https://support.apple.com/en-us/HT211896"
-		echo "Setting About Update URL to \"What's new in the updates for macOS Big Sur\""
-	elif [[ "${latestVersionRelease}" == "12" ]] ; then 
-		aboutUpdateURL="https://support.apple.com/en-us/HT212585" # future link for macOS Monterey
-		echo "Setting About Update URL to What's new in the updates for macOS Monterey"
+function setAboutUpdate {
+	# Set the About Update URL for each major release
+	if [[ "${majorVersionNumber}" == "11" ]] ; then 
+		aboutUpdateURL="https://support.apple.com/en-us/HT211896" # What's new in the updates for macOS Big Sur
+	elif [[ "${majorVersionNumber}" == "12" ]] ; then 
+		aboutUpdateURL="https://support.apple.com/en-us/HT212585" # What's new in the updates for macOS Monterey
 	else
 		aboutUpdateURL="https://support.apple.com/en-us/HT201541" # Update macOS on Mac
 	fi
+	echo "Setting About Update URL for macOS ${majorVersionName} to ${aboutUpdateURL}…"
+}
+
+function getPatchResults {
+	# Get the latest release info from Jamf Patch
+	jamfPatchResults=$(curl -s "https://jamf-patch.jamfcloud.com/v1/software/${majorVersionPatchID}")
+}
+
+function getLatestVersionNumber {
+	# Get the latest version's version number, based on the Jamf Patch information
+	latestVersionNumber=$( echo "$jamfPatchResults" | grep currentVersion | tr -d '"' | awk '{ print $2 }')
+	
+	echo "Latest version of macOS ${majorVersionName} is ${latestVersionNumber}…"
+}
+
+function setRequiredInstallationDate {
+	# Get the latest version's release date, based on the Jamf Patch information
+	latestVersionReleaseDate=$( echo "$jamfPatchResults" | grep lastModified | tr -d '"' | awk '{ print $2 }' | cut -c1-10)
 
 	# Calculate the required installation date in the future, based upon the release date
-
 	# …for macOS
-	requiredInstallationFutureDate=$(date -j -v +45d -f "%Y-%m-%d" "$latestVersionReleaseDate" +%Y-%m-%d)
+	requiredInstallationFutureDate=$(date -j -v +${leadTimeInDays}d -f "%Y-%m-%d" "$latestVersionReleaseDate" +%Y-%m-%d)
 
 	# …for Linux
-	# requiredInstallationFutureDate=$(date -d "+45 days" -I)
+	# requiredInstallationFutureDate=$(date -d "+$leadTimeInDays days" -I)
 
-	requiredInstallationFutureTime="T00:00:00Z"
+	# Combine the date with the time for required installation
 	requiredInstallationDate="$requiredInstallationFutureDate$requiredInstallationFutureTime"
-	echo "Latest OS release date is $latestVersionReleaseDate, setting required installation date to $requiredInstallationFutureDate"
+	
+	echo "Latest release date for macOS ${majorVersionName} is ${latestVersionReleaseDate}, setting required installation date to ${requiredInstallationDate}…"
+}
 
-	# Generate new JSON
-	cat <<-EOF > nudge-11.json
+# Create a Nudge Event for each major release, and write them to nudge.json
+
+function defineNudgeEvent {
+	setAboutUpdate
+	getPatchResults
+	getLatestVersionNumber
+	setRequiredInstallationDate
+
+	nudgeEventData="
+			{	// macOS $majorVersionName
+				\"aboutUpdateURL\": \"$aboutUpdateURL\",
+				\"requiredInstallationDate\": \"$requiredInstallationDate\",
+				\"requiredMinimumOSVersion\": \"$latestVersionNumber\",
+				\"targetedOSVersionsRule\": \"$majorVersionNumber\"
+			}"
+}
+
+function createNudgeFile {
+	cat <<-EOF > nudge.json
 	{
-		"osVersionRequirements": [{
-			"aboutUpdateURL": "$aboutUpdateURL",
-			"requiredInstallationDate": "$requiredInstallationDate",
-			"requiredMinimumOSVersion": "$latestVersionNumber",
-			"targetedOSVersions": [ $targetedOSVersions ]
-		}]
-	}
+			"osVersionRequirements": [
 	EOF
 
-	scriptResult+="Updated nudge-11.json; "
+	echo "${osVersionMonterey},${osVersionBigSur}" >> nudge.json
+	scriptResult+="Updated nudge.json! "
 	echo $scriptResult
-	exit 0
-fi
+
+	echo "
+			]
+	}" >> nudge.json
+}
+
+# Define major release
+
+function nudgeMonterey {
+	majorVersionName="Monterey"
+	majorVersionNumber="12"
+	majorVersionPatchID="41F"
+
+	defineNudgeEvent
+	
+	osVersionMonterey="$nudgeEventData"
+}
+
+function nudgeBigSur {
+	majorVersionName="Big Sur"
+	majorVersionNumber="11"
+	majorVersionPatchID="303"
+
+	defineNudgeEvent
+
+	osVersionBigSur="$nudgeEventData"
+}
+
+nudgeMonterey
+nudgeBigSur
+
+createNudgeFile
+
+exit 0
