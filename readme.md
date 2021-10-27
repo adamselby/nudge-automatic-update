@@ -16,7 +16,7 @@ Define required minimum OS versions, required installation dates, and targeted O
 
 ### aboutUpdateURL
 
-This is a URL for the "More information" button in Nudge. This can be used to link to the "What's new in the updates for macOS" Apple Support article, or could be used to link to a CAS documentation page about a specific update, or our update policy in general. 
+This is a URL for the "More information" button in Nudge. This can be used to link to the "What's new in the updates for macOS" Apple Support article, or could be used to link to an internal documentation page about a specific update, or our update policy in general. 
 
 ### requiredInstallationDate
 
