@@ -100,8 +100,8 @@ function nudgeBigSur {
 	osVersionBigSur="$nudgeEventData"
 }
 
-nudgeMonterey
 nudgeBigSur
+nudgeMonterey
 
 createNudgeFile
 
