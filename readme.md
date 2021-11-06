@@ -1,3 +1,5 @@
+# Nudge Automatic Update
+
 You can use [Nudge](https://github.com/macadmins/nudge) to enforce macOS updates, but this requires manual work on your part for regular updates to macOS. Nudge is entirely customizable, and allows you the ability to require OS updates be completed by specific set dates, which is what you can automate using *update-nudge.sh*. The customization of Nudge can happen via a Configuration Profile, and *nudge.json* in this repository can manage the `osVersionRequirements` section of Nudge independently of the Configuration Profile. This allows for updates as each new version of macOS releases, without pushing a new profile. 
 
 To do this, the JSON file can be served up at a URL which is then specified as *-json-url* in the LaunchAgent. This LaunchAgent is installed along with Nudge, or can be created and updated via a script, independently of your install. Each time Nudge is launched via this LaunchAgent, it checks the URL for `osVersionRequirements` in *nudge.json*. Because of the difference in OS versions, it would be This information consists of a few key parts, which are detailed below. 
