@@ -14,6 +14,10 @@ Each new release is added with a configurable lead time (default: 14 days) from 
 
 Currently, this script does not account for or accommodate [deferring software updates](https://support.apple.com/guide/mdm/managing-software-updates-mdm02df57e2a/web#mdmfb8077b62), and assumes that updates are available to your users immediately. A future version of this script will allow for a configurable deferral period. 
 
+### nudgeLatest
+
+`nudgeLatest` uses the generic macOS Jamf Patch item, which always reflects the most recent public version of macOS. This uses the Nudge Event `targetedOSVersionsRule` of **default**, ensuring that users on any version of macOS receive the Nudge Event. 
+
 ## nudge.json
 
 Defines multiple values for a major release of macOS, including the about update URL, required installation dates, minimum OS versions, and targeted OS version in a JSON file that is read by Nudge, in order to enforce Software Updates to end users. This JSON file can be served directly from Git, or hosted on a static web server. 
