@@ -14,7 +14,7 @@ function setAboutUpdate {
 	else
 		aboutUpdateURL="https://support.apple.com/en-us/HT201541" # Update macOS on Mac
 	fi
-	echo "Setting About Update URL for macOS ${majorVersionName} to ${aboutUpdateURL}…"
+	echo "Setting About Update URL for ${majorVersionName} to ${aboutUpdateURL}…"
 }
 
 function getPatchResults {
@@ -26,7 +26,7 @@ function getLatestVersionNumber {
 	# Get the latest version's version number, based on the Jamf Patch information
 	latestVersionNumber=$( echo "$jamfPatchResults" | grep currentVersion | tr -d '"' | awk '{ print $2 }')
 	
-	echo "Latest version of macOS ${majorVersionName} is ${latestVersionNumber}…"
+	echo "Latest version of ${majorVersionName} is ${latestVersionNumber}…"
 }
 
 function setRequiredInstallationDate {
@@ -43,7 +43,7 @@ function setRequiredInstallationDate {
 	# Combine the date with the time for required installation
 	requiredInstallationDate="$requiredInstallationFutureDate$requiredInstallationFutureTime"
 	
-	echo "Latest release date for macOS ${majorVersionName} is ${latestVersionReleaseDate}, setting required installation date to ${requiredInstallationDate}…"
+	echo "Latest release date for ${majorVersionName} is ${latestVersionReleaseDate}, setting required installation date to ${requiredInstallationDate}…"
 }
 
 # Create a Nudge Event for each major release, and write them to nudge.json
@@ -55,7 +55,7 @@ function defineNudgeEvent {
 	setRequiredInstallationDate
 
 	nudgeEventData="
-			{	// macOS $majorVersionName
+			{	// $majorVersionName
 				\"aboutUpdateURL\": \"$aboutUpdateURL\",
 				\"requiredInstallationDate\": \"$requiredInstallationDate\",
 				\"requiredMinimumOSVersion\": \"$latestVersionNumber\",
@@ -81,7 +81,7 @@ function createNudgeFile {
 # Define major release
 
 function nudgeMonterey {
-	majorVersionName="Monterey"
+	majorVersionName="macOS Monterey"
 	majorVersionNumber="12"
 	majorVersionPatchID="41F"
 
@@ -91,7 +91,7 @@ function nudgeMonterey {
 }
 
 function nudgeBigSur {
-	majorVersionName="Big Sur"
+	majorVersionName="macOS Big Sur"
 	majorVersionNumber="11"
 	majorVersionPatchID="303"
 
@@ -100,8 +100,19 @@ function nudgeBigSur {
 	osVersionBigSur="$nudgeEventData"
 }
 
+function nudgeLatest {
+	majorVersionName="macOS"
+	majorVersionNumber="default"
+	majorVersionPatchID="macOS"
+
+	defineNudgeEvent
+
+	osVersionLatest="$nudgeEventData"
+}
+
 nudgeBigSur
 nudgeMonterey
+# nudgeLatest
 
 createNudgeFile
 
